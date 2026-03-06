@@ -1,169 +1,277 @@
 import React, { useRef, useState } from 'react';
-import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { IceButton } from '@/app/components/Icebutton';
+import {
+  Animated,
+  Dimensions,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { Background } from '@/app/components/Background';
-import { OnboardingArtist } from './OnboardingArtist';
-import { Colors } from '@/constants/token';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+
+const { width: W } = Dimensions.get('window');
 
 const GENRES = [
-  'Fitness',
-  'Cuisine',
-  'Randonnée',
-  'Dernière',
-  'Clar sala',
-  'Séries',
-  'Tennis',
-  'Jaghécarte',
-  'Voir Après',
+  'Musical', 'Genres', 'Restarmans', 'Gemers',
+  'Carious', 'Snibs', 'Toronto', 'Reglessune',
+  'New series',
+];
+
+const ARTISTS = [
+  { id: '1', name: 'Famme artist' },
+  { id: '2', name: 'Mania Relin' },
+  { id: '3', name: 'Obcisions' },
+  { id: '4', name: 'Maraia' },
+  { id: '5', name: 'New fait' },
+  { id: '6', name: 'Favors' },
 ];
 
 export default function Onboarding() {
-  const [selected, setSelected] = useState<string[]>([GENRES[0]]);
-  const [showArtist, setShowArtist] = useState(false);
+  const router = useRouter();
+  const [step, setStep] = useState(0);
+  const [selectedGenres, setSelectedGenres] = useState<string[]>(['Musical']);
+  const [selectedArtists, setSelectedArtists] = useState<string[]>([]);
+  const slideX = useRef(new Animated.Value(0)).current;
 
-  /* ── Valeurs d'animation ── */
-  const slideOut = useRef(new Animated.Value(0)).current; // écran 1 : 0 = visible, -1 = sorti à gauche
-  const slideIn = useRef(new Animated.Value(1)).current; // écran 2 : 1 = hors écran droite, 0 = visible
-
-  const toggle = (genre: string) => {
-    setSelected((prev) =>
-      prev.includes(genre) ? prev.filter((g) => g !== genre) : [...prev, genre]
-    );
+  const goTo = (nextStep: number) => {
+    const dir = nextStep > step ? -1 : 1;
+    Animated.timing(slideX, { toValue: dir * W, duration: 340, useNativeDriver: true }).start(() => {
+      setStep(nextStep);
+      slideX.setValue(-dir * W);
+      Animated.timing(slideX, { toValue: 0, duration: 340, useNativeDriver: true }).start();
+    });
   };
 
-  const goNext = () => {
-    /* Lance les deux animations en parallèle */
-    Animated.parallel([
-      Animated.timing(slideOut, {
-        toValue: -1,
-        duration: 380,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideIn, {
-        toValue: 0,
-        duration: 380,
-        useNativeDriver: true,
-      }),
-    ]).start(() => setShowArtist(true));
-  };
+  const toggleGenre = (g: string) =>
+    setSelectedGenres((prev) => prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]);
+
+  const toggleArtist = (id: string) =>
+    setSelectedArtists((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
 
   return (
     <Background>
-      <View style={styles.root}>
-        {/* ══ ÉCRAN 1 — Genres (glisse vers la gauche) ══ */}
-        {!showArtist && (
-          <Animated.View
-            style={[
-              StyleSheet.absoluteFill,
-              {
-                transform: [
-                  {
-                    translateX: slideOut.interpolate({
-                      inputRange: [-1, 0],
-                      outputRange: ['-100%', '0%'],
-                    }),
-                  },
-                ],
-              },
-            ]}>
-            <View style={styles.screen}>
-              <View style={styles.topSection}>
-                <Text style={styles.title}>Onboarding</Text>
-              </View>
+      <Animated.View style={[styles.root, { transform: [{ translateX: slideX }] }]}>
 
-              <View style={styles.cardFirstContain}>
-                <View style={styles.bottomCard}>
-                  <Text style={styles.cardTitle}>Select une genre</Text>
-                  <Text style={styles.cardSub}>( 5 genres au moins )</Text>
-
-                  <View style={styles.tagsWrap}>
-                    {GENRES.map((genre) => {
-                      const isOn = selected.includes(genre);
-                      return (
-                        <TouchableOpacity
-                          key={genre}
-                          activeOpacity={0.75}
-                          onPress={() => toggle(genre)}
-                          style={[styles.tag, isOn && styles.tagSelected]}>
-                          <Text style={[styles.tagText, isOn && styles.tagTextSelected]}>
-                            {genre}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
-
-                  <View style={styles.btnSelect}>
-                    <IceButton
-                      tKey="common.select"
-                      label="Select"
-                      variant="ice"
-                      size="md"
-                      onPress={goNext}
-                    />
-                  </View>
+        {/* ─── STEP 0 : SPLASH ─────────────────────────────── */}
+        {step === 0 && (
+          <View style={styles.splashScreen}>
+            <View style={styles.splashCenter}>
+              <Text style={styles.splashBrand}>ICEPASS</Text>
+              <View style={styles.ticketWrap}>
+                <View style={[styles.ticketCard, styles.ticketBack]}>
+                  <Ionicons name="ticket" size={40} color="rgba(255,255,255,0.6)" />
+                </View>
+                <View style={[styles.ticketCard, styles.ticketFront]}>
+                  <Ionicons name="ticket" size={40} color="#fff" />
                 </View>
               </View>
             </View>
-          </Animated.View>
+
+            <View style={styles.dotsRow}>
+              <View style={[styles.dot, styles.dotActive]} />
+              <View style={styles.dot} />
+              <View style={styles.dot} />
+            </View>
+
+            <TouchableOpacity style={styles.splashBtn} activeOpacity={0.85} onPress={() => goTo(1)}>
+              <Text style={styles.splashBtnText}>Commencer</Text>
+              <Ionicons name="arrow-forward" size={18} color="#1A1A2E" />
+            </TouchableOpacity>
+          </View>
         )}
 
-        {/* ══ ÉCRAN 2 — Artistes (glisse depuis la droite) ══ */}
-        <Animated.View
-          style={[
-            StyleSheet.absoluteFill,
-            {
-              transform: [
-                {
-                  translateX: slideIn.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: ['0%', '100%'],
-                  }),
-                },
-              ],
-            },
-          ]}
-          pointerEvents={showArtist ? 'auto' : 'none'}>
-          <OnboardingArtist />
-        </Animated.View>
-      </View>
+        {/* ─── STEP 1 : GENRES ─────────────────────────────── */}
+        {step === 1 && (
+          <View style={styles.screen}>
+            <View style={styles.topSection}>
+              <Text style={styles.topTitle}>Onboarding</Text>
+            </View>
+
+            <View style={styles.cardFirstContain}>
+              <View style={styles.bottomCard}>
+                <Text style={styles.cardHeading}>Select une genre</Text>
+                <Text style={styles.cardSub}>(5 genres musical)</Text>
+
+                <View style={styles.tagsWrap}>
+                  {GENRES.map((genre) => {
+                    const on = selectedGenres.includes(genre);
+                    return (
+                      <TouchableOpacity
+                        key={genre}
+                        activeOpacity={0.75}
+                        onPress={() => toggleGenre(genre)}
+                        style={[styles.tag, on && styles.tagSelected]}>
+                        <Text style={[styles.tagText, on && styles.tagTextSelected]}>{genre}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+
+                <View style={styles.btnWrap}>
+                  <TouchableOpacity
+                    style={[styles.selectBtn, selectedGenres.length < 1 && styles.selectBtnDisabled]}
+                    activeOpacity={0.85}
+                    onPress={() => selectedGenres.length >= 1 && goTo(2)}>
+                    <Text style={styles.selectBtnText}>Select</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </View>
+        )}
+
+        {/* ─── STEP 2 : ARTISTES ───────────────────────────── */}
+        {step === 2 && (
+          <View style={styles.screen}>
+            <View style={styles.topSection}>
+              <Text style={styles.topTitle}>Onboarding</Text>
+            </View>
+
+            <View style={styles.cardFirstContain}>
+              <View style={styles.bottomCard}>
+                <Text style={styles.cardHeading}>Select une artist</Text>
+                <Text style={styles.cardSub}>(met ov favors)</Text>
+
+                <View style={styles.tagsWrap}>
+                  {ARTISTS.map((artist) => {
+                    const on = selectedArtists.includes(artist.id);
+                    return (
+                      <TouchableOpacity
+                        key={artist.id}
+                        activeOpacity={0.75}
+                        onPress={() => toggleArtist(artist.id)}
+                        style={[styles.tag, on && styles.tagSelected]}>
+                        <Text style={[styles.tagText, on && styles.tagTextSelected]}>{artist.name}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+
+                <View style={styles.btnWrap}>
+                  <TouchableOpacity
+                    style={styles.selectBtn}
+                    activeOpacity={0.85}
+                    onPress={() => router.replace('/login')}>
+                    <Text style={styles.selectBtnText}>Select</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </View>
+        )}
+
+      </Animated.View>
     </Background>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
+  root: { flex: 1 },
+
+  /* ── Splash ── */
+  splashScreen: {
     flex: 1,
-    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 80,
+    paddingHorizontal: 32,
+  },
+  splashCenter: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 40,
+  },
+  splashBrand: {
+    fontSize: 48,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: 12,
+    fontStyle: 'italic',
+    textShadowColor: 'rgba(0,200,255,0.6)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 32,
+  },
+  ticketWrap: {
+    width: 120,
+    height: 100,
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ticketCard: {
+    position: 'absolute',
+    width: 80,
+    height: 80,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ticketBack: {
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    transform: [{ rotate: '-14deg' }, { translateX: -14 }, { translateY: 10 }],
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  ticketFront: {
+    backgroundColor: 'rgba(255,255,255,0.22)',
+    transform: [{ rotate: '8deg' }],
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.45)',
+  },
+  dotsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 16,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+  },
+  dotActive: {
+    width: 24,
+    backgroundColor: '#fff',
+  },
+  splashBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#fff',
+    paddingHorizontal: 36,
+    paddingVertical: 16,
+    borderRadius: 50,
+  },
+  splashBtnText: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#1A1A2E',
   },
 
-  screen: {
-    flex: 1,
-  },
-
+  /* ── Steps ── */
+  screen: { flex: 1 },
   topSection: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 24,
   },
-
-  title: {
-    fontSize: 34,
+  topTitle: {
+    fontSize: 32,
     fontWeight: '800',
-    color: '#FFFFFF',
-    letterSpacing: 0.5,
-    textShadowColor: 'rgba(0,0,0,0.25)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 8,
+    color: '#fff',
+    letterSpacing: 0.3,
+    textAlign: 'center',
   },
-
   cardFirstContain: {
     flex: 2,
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 10,
     paddingBottom: 40,
   },
-
   bottomCard: {
     marginTop: -40,
     flex: 1,
@@ -177,56 +285,63 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 12,
   },
-
-  cardTitle: {
-    fontSize: 18,
+  cardHeading: {
+    fontSize: 20,
     fontWeight: '700',
     color: '#1A1A2E',
     textAlign: 'center',
     marginBottom: 4,
   },
-
   cardSub: {
-    fontSize: 12,
-    color: '#9CA3AF',
+    fontSize: 13,
+    color: '#94A3B8',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
   },
-
   tagsWrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 10,
   },
-
   tag: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 999,
-    backgroundColor: 'rgba(0,102,255,0.07)',
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 50,
+    backgroundColor: '#F1F5F9',
     borderWidth: 1.5,
-    borderColor: Colors.outline,
+    borderColor: '#E2E8F0',
   },
-
   tagSelected: {
-    backgroundColor: Colors.primaryBlue,
-    borderColor: Colors.primaryBlue,
+    backgroundColor: '#3B82F6',
+    borderColor: '#3B82F6',
   },
-
   tagText: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
-    color: Colors.outline,
+    color: '#64748B',
   },
-
   tagTextSelected: {
-    color: '#FFFFFF',
+    color: '#fff',
   },
-
-  btnSelect: {
+  btnWrap: {
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'flex-end',
     paddingBottom: 8,
+  },
+  selectBtn: {
+    height: 54,
+    borderRadius: 50,
+    backgroundColor: '#3B82F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  selectBtnDisabled: {
+    backgroundColor: '#CBD5E1',
+  },
+  selectBtnText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#fff',
+    letterSpacing: 0.3,
   },
 });

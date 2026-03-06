@@ -1,51 +1,52 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '@/constants/token';
+import { useApp } from '@/app/context/AppContext';
 
 export default function TabsLayout() {
+  const { theme, t } = useApp();
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: Colors.primaryBlue,
-        tabBarInactiveTintColor: '#999',
+        tabBarActiveTintColor: theme.icon,
+        tabBarInactiveTintColor: theme.subtext,
+        tabBarStyle: {
+          backgroundColor: theme.tabBar,
+          borderTopColor: theme.tabBorder,
+        },
       }}>
-      {/* HOME */}
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: t('home'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home-outline" size={size} color={color} />
           ),
         }}
       />
-
       <Tabs.Screen
         name="favorite"
         options={{
-          title: 'Favoris',
+          title: t('favorites'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="heart-outline" size={size} color={color} />
           ),
         }}
       />
-
       <Tabs.Screen
         name="search"
         options={{
-          title: 'Search',
+          title: t('search'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="search-outline" size={size} color={color} />
           ),
         }}
       />
-
-      {/* MARKET */}
       <Tabs.Screen
         name="market"
         options={{
-          title: 'Market',
+          title: t('market'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="storefront-outline" size={size} color={color} />
           ),
@@ -54,7 +55,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: t('profile'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person-outline" size={size} color={color} />
           ),

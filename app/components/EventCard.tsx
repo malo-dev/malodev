@@ -28,10 +28,11 @@ import { useTranslation } from 'react-i18next';
 import { IceButton } from './Icebutton';
 
 /* ─── Types ──────────────────────────────────────────────────────────── */
-export type EventCardVariant = 'vertical' | 'horizontal';
+export type EventCardVariant = 'vertical' | 'horizontal' | 'overlay';
 export type EventBadge = 'top-deal' | 'verified' | 'countdown' | null;
 
 export interface EventCardProps {
+  isbtn? : boolean;
   image: ImageSourcePropType;
   title: string;
   subtitle?: string;
@@ -74,6 +75,7 @@ const BADGE_CFG = {
 
 /* ─── Composant ──────────────────────────────────────────────────────── */
 export function EventCard({
+   isbtn=false,
   image,
   title,
   subtitle,
@@ -96,6 +98,60 @@ export function EventCard({
 
   const bdg = badge ? BADGE_CFG[badge] : null;
 
+  /* ── Variante OVERLAY (image pleine + texte en bas) ── */
+  if (variant === 'overlay') {
+    return (
+      <Animated.View
+        style={{ transform: [{ scale }], borderRadius: 16, overflow: 'hidden' }}>
+        <TouchableOpacity
+          onPress={onPress}
+          onPressIn={pressIn}
+          onPressOut={pressOut}
+          activeOpacity={1}>
+          <View style={{ width: '100%', aspectRatio: 16 / 9, borderRadius: 16, overflow: 'hidden' }}>
+            <Image source={image} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+            <LinearGradient
+              colors={['transparent', 'rgba(0,0,0,0.80)']}
+              start={{ x: 0, y: 0.3 }}
+              end={{ x: 0, y: 1 }}
+              style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }}
+            />
+
+            {/* Badge en haut à gauche */}
+            {bdg && (
+              <View
+                className="absolute flex-row items-center px-2 py-1 rounded-full left-2 top-2 gap-x-1"
+                style={{ backgroundColor: bdg.bg }}>
+                <Ionicons name={bdg.icon as any} size={11} color={bdg.color} />
+                <Text className="text-[10px] font-semibold" style={{ color: bdg.color }}>
+                  {badge === 'countdown'
+                    ? countdown
+                    : bdg.tKey
+                      ? String(t(bdg.tKey, bdg.label))
+                      : bdg.label}
+                </Text>
+              </View>
+            )}
+
+            {/* Titre + sous-titre en bas de l'image */}
+            <View className="absolute bottom-0 left-0 right-0 px-3 pb-3">
+              <Text
+                className="font-poppins text-[14px] font-bold text-white"
+                numberOfLines={1}>
+                {title}
+              </Text>
+              {subtitle && (
+                <Text className="text-[11px] text-white/70 mt-[2px]" numberOfLines={1}>
+                  {subtitle}
+                </Text>
+              )}
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Animated.View>
+    );
+  }
+
   /* ── Variante VERTICALE (grid) ── */
   if (variant === 'vertical') {
     return (
@@ -108,7 +164,7 @@ export function EventCard({
           onPressOut={pressOut}
           activeOpacity={1}>
           <View style={{ width: '100%', aspectRatio: 16 / 9, overflow: 'hidden' }}>
-            <Image source={image} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+            <Image source={image} style={{ width: '100%', height: '100%',borderRadius:16 }} resizeMode="cover" />
 
             {/* Overlay dégradé sombre */}
             <LinearGradient
@@ -121,7 +177,7 @@ export function EventCard({
             {/* Badge en haut à gauche */}
             {bdg && (
               <View
-                className="absolute left-2 top-2 flex-row items-center gap-x-1 rounded-full px-2 py-1"
+                className="absolute flex-row items-center px-2 py-1 rounded-full left-2 top-2 gap-x-1"
                 style={{ backgroundColor: bdg.bg }}>
                 <Ionicons name={bdg.icon as any} size={11} color={bdg.color} />
                 <Text className="text-[10px] font-semibold" style={{ color: bdg.color }}>
@@ -145,7 +201,7 @@ export function EventCard({
           </View>
 
           {/* ── Infos ── */}
-          <View className="gap-y-1 px-3 py-3">
+          <View className="px-3 py-3 gap-y-1">
             <Text
               className="font-poppins text-[14px] font-semibold text-text-main-dark"
               numberOfLines={1}>
@@ -158,7 +214,7 @@ export function EventCard({
             )}
 
             {/* Bouton Acheter */}
-            {onBuy && (
+            {onBuy &&  (
               <View className="mt-2">
                 <IceButton
                   tKey="event.buy"
@@ -185,10 +241,10 @@ export function EventCard({
         onPressIn={pressIn}
         onPressOut={pressOut}
         activeOpacity={1}
-        className="flex-1 flex-row">
+        className="flex-row flex-1">
         {/* Vignette image */}
-        <View style={{ height: 90, width: 110, overflow: 'hidden' }}>
-          <Image source={image} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+        <View style={{ height: 90, width: 110, overflow: 'hidden',borderRadius:16 }}>
+          <Image source={image} style={{ width: '100%', height: '100%',borderRadius:16 }} resizeMode="cover" />
           <LinearGradient
             colors={['transparent', 'rgba(0,0,0,0.55)']}
             start={{ x: 0.5, y: 0 }}
@@ -205,7 +261,7 @@ export function EventCard({
         </View>
 
         {/* Infos */}
-        <View className="flex-1 justify-between px-3 py-2">
+        <View className="justify-between flex-1 px-3 py-2">
           <View>
             <Text
               className="font-poppins text-[13px] font-semibold text-text-main-dark"
@@ -219,13 +275,13 @@ export function EventCard({
             )}
           </View>
 
-          <View className="mt-1 flex-row items-center justify-between">
+          <View className="flex-row items-center justify-between mt-1">
             {price && (
               <Text className="text-[15px] font-bold" style={{ color: priceColor }}>
                 {price}
               </Text>
             )}
-            {onBuy && (
+            {onBuy && isbtn && (
               <IceButton
                 tKey="event.buy"
                 label="Acheter"

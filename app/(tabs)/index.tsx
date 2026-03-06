@@ -3,6 +3,7 @@ import { Image, ScrollView, StyleSheet, Text, TextInput, View } from 'react-nati
 import { EventCard } from '@/app/components/EventCard';
 import { Background } from '@/app/components/Background';
 import { Ionicons } from '@expo/vector-icons';
+import { useApp } from '@/app/context/AppContext';
 
 const IMG1 = {
   uri: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=1000&q=60',
@@ -10,58 +11,65 @@ const IMG1 = {
 const IMG2 = {
   uri: 'https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?auto=format&fit=crop&w=1000&q=60',
 };
-const MAP = {
-  uri: 'https://images.unsplash.com/photo-1502920917128-1aa500764cec?auto=format&fit=crop&w=1200&q=60',
-};
+import MAP from '@/assets/GoogleMapTA.webp';
 
 export default function HomeScreen() {
   const [mapOk, setMapOk] = useState(true);
+  const { theme, t } = useApp();
   return (
     <Background>
       <View style={styles.topSection}>
-        <Text style={styles.title}>Home</Text>
+        <Text style={styles.title}>{t('home')}</Text>
       </View>
-      <View style={styles.cardFirstContain}>
-        <View style={styles.bottomCard}>
+      <View style={[styles.cardFirstContain, { backgroundColor: theme.bg }]}>
+        <View style={[styles.bottomCard, { backgroundColor: theme.card }]}>
           <ScrollView contentContainerStyle={{ padding: 12, gap: 16 }}>
             {/* Search bar */}
-            <View style={styles.searchBar}>
-              <Ionicons name="search-outline" size={18} color="#64748B" />
+            <View style={[styles.searchBar, { backgroundColor: theme.input, borderColor: theme.border }]}>
+              <Ionicons name="search-outline" size={18} color={theme.subtext} />
               <TextInput
                 placeholder="Rechercher"
-                placeholderTextColor="#94A3B8"
-                style={styles.searchInput}
+                placeholderTextColor={theme.placeholder}
+                style={[styles.searchInput, { color: theme.text }]}
               />
             </View>
 
             {/* Top Events selon nos goûts */}
-            <Text style={styles.sectionTitle}>Top Events selon nos goûts</Text>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Top Events selon nos goûts</Text>
+              <Ionicons name="chevron-forward" size={16} color="#1A1A2E" />
+            </View>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.hRow}>
-              <View style={{ width: 200 }}>
+              <View style={{ width: 220 }}>
                 <EventCard
                   image={IMG1}
                   title="Festival Aurora"
                   subtitle="Aapmonestr • 1 min"
-                  price="27,9€"
                   badge="top-deal"
                   onPress={() => {}}
-                  onBuy={() => {}}
-                  variant="vertical"
+                  variant="overlay"
                 />
               </View>
-              <View style={{ width: 200 }}>
+              <View style={{ width: 220 }}>
                 <EventCard
                   image={IMG2}
                   title="Soirée Electro"
                   subtitle="Near • 5 min"
-                  price="19,0€"
                   badge="verified"
                   onPress={() => {}}
-                  onBuy={() => {}}
-                  variant="vertical"
+                  variant="overlay"
+                />
+              </View>
+              <View style={{ width: 220 }}>
+                <EventCard
+                  image={IMG1}
+                  title="Concert Jazz"
+                  subtitle="Centre ville • 8 min"
+                  onPress={() => {}}
+                  variant="overlay"
                 />
               </View>
             </ScrollView>
@@ -81,45 +89,59 @@ export default function HomeScreen() {
                 <Text style={styles.mapText}>Carte indisponible</Text>
               </View>
             )}
-            <EventCard
-              image={IMG1}
-              title="Festival XXX"
-              subtitle="Recherches • 2 min"
-              price="27,5€"
-              badge={null}
-              onPress={() => {}}
-              onBuy={() => {}}
-              variant="horizontal"
-            />
+            {[
+              { title: 'Festival XXX', subtitle: 'Recherches • 21min', price: '27,9€' },
+              { title: 'Top toecne', subtitle: 'Recherches données • 388h', price: '57,9€' },
+            ].map((item, i) => (
+              <View key={i} style={styles.nearRow}>
+                <View style={styles.nearIcon}>
+                  <Ionicons name="location-outline" size={16} color="#64748B" />
+                </View>
+                <View style={styles.nearInfo}>
+                  <Text style={styles.nearTitle}>{item.title}</Text>
+                  <Text style={styles.nearSubtitle}>{item.subtitle}</Text>
+                </View>
+                <Text style={styles.nearPrice}>{item.price}</Text>
+              </View>
+            ))}
 
             {/* Top Deals */}
-            <Text style={styles.sectionTitle}>Top Deals</Text>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Top Deals</Text>
+              <Ionicons name="chevron-forward" size={16} color="#1A1A2E" />
+            </View>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.hRow}>
-              <View style={{ width: 260 }}>
+              <View style={{ width: 160 }}>
                 <EventCard
                   image={IMG2}
                   title="Top tacos"
-                  subtitle="Restauration - 5 min"
-                  price="5,9€"
-                  badge="top-deal"
+                  badge="countdown"
+                  countdown="01:12"
                   onPress={() => {}}
-                  onBuy={() => {}}
-                  variant="horizontal"
+                  variant="overlay"
                 />
               </View>
-              <View style={{ width: 260 }}>
+              <View style={{ width: 160 }}>
                 <EventCard
                   image={IMG1}
                   title="Happy Hour"
-                  subtitle="Bar - 3 min"
-                  price="2,0€"
-                  badge="top-deal"
+                  badge="countdown"
+                  countdown="01:20"
                   onPress={() => {}}
-                  onBuy={() => {}}
-                  variant="horizontal"
+                  variant="overlay"
+                />
+              </View>
+              <View style={{ width: 160 }}>
+                <EventCard
+                  image={IMG2}
+                  title="Top E"
+                  badge="countdown"
+                  countdown="00:45"
+                  onPress={() => {}}
+                  variant="overlay"
                 />
               </View>
             </ScrollView>
@@ -179,6 +201,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#1A1A2E',
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   sectionTitle: {
     fontSize: 14,
     fontWeight: '700',
@@ -187,6 +214,38 @@ const styles = StyleSheet.create({
   hRow: {
     gap: 12,
     paddingVertical: 4,
+  },
+  nearRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 6,
+  },
+  nearIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  nearInfo: {
+    flex: 1,
+  },
+  nearTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#1A1A2E',
+  },
+  nearSubtitle: {
+    fontSize: 11,
+    color: '#64748B',
+    marginTop: 1,
+  },
+  nearPrice: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#00F0FF',
   },
   map: {
     height: 120,
