@@ -12,7 +12,7 @@ const IMG2 = {
   uri: 'https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?auto=format&fit=crop&w=1000&q=60',
 };
 import MAP from '@/assets/GoogleMapTA.webp';
-
+// djfbdjsffd
 export default function HomeScreen() {
   const [mapOk, setMapOk] = useState(true);
   const { theme, t } = useApp();
